@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block container %}
+<h2>Login</h2>
+<p>Login to save your data.</p>
+<form method="POST" action="{{ url_for('login') }}" class="login-form">
+  <div class="form-group">
+    <label for="fusername">Username:</label>
+    <input type="text" id="fusername" name="fusername" />
+  </div>
+  <div class="form-group">
+    <label for="fpassword">Password:</label>
+    <input type="password" id="fpassword" name="fpassword" />
+  </div>
+  <div class="form-actions">
+    <a href="{{ url_for('register')}}" class="link">Register</a>
+    <input type="submit" name="login-btn" value="Login" class="button" />
+  </div>
+</form>
+{% endblock %}

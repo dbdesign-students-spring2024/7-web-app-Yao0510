@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block container %}
+<h2>Todos</h2>
+<p>Welcome back, {{session['username']}}!</p>
+<form method="POST" action="{{ url_for('add_todo') }}" class="todo-form">
+    <div class="add-group">
+        <input type="text" id="title" name="title" placeholder="Title">
+        <input type="text" id="description" name="description" placeholder="Description">
+        <input type="submit" value="Add Todo" class="button">
+    </div>
+</form>
+<div class="todo-list">
+    {% for todo in todos %}
+    <div class="todo-item">
+        <h3>{{todo['title']}}</h3>
+        <p>{{todo['description']}}</p>
+        <div class="form-actions">
+            <a href="{{url_for('edit_todo', mongoid=todo._id)}}" class="button">Edit</a>
+            <a href="{{url_for('delete', mongoid=todo._id)}}" class="button">Delete</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

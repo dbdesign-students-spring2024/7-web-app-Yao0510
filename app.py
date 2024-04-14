@@ -4,8 +4,25 @@ import os
 import sys
 import subprocess
 import datetime
+import time
 
-from flask import Flask, render_template, request, redirect, url_for, make_response
+from flask import (
+    Flask,
+    render_template,
+    request,
+    redirect,
+    url_for,
+    make_response,
+    session,
+)
+from flask_login import (
+    LoginManager,
+    UserMixin,
+    login_user,
+    login_required,
+    logout_user,
+    current_user,
+)
 
 # import logging
 import sentry_sdk
@@ -33,14 +50,14 @@ sentry_sdk.init(
     traces_sample_rate=1.0,
     # Set profiles_sample_rate to 1.0 to profile 100% of sampled transactions.
     # We recommend adjusting this value in production.
-    profiles_sample_rate=1.0,
+    # profiles_sample_rate=1.0,
     integrations=[FlaskIntegration()],
-    traces_sample_rate=1.0,
     send_default_pii=True,
 )
 
 # instantiate the app using sentry for debugging
 app = Flask(__name__)
+app.secret_key = os.getenv("SECRET_KEY")  # set the secret key for the app
 
 # # turn on debugging if in development mode
 # app.debug = True if os.getenv("FLASK_ENV", "development") == "development" else False
@@ -61,6 +78,97 @@ except ConnectionFailure as e:
     sys.exit(1)  # this is a catastrophic error, so no reason to continue to live
 
 
+# set up the login manager
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = "login"
+
+
+# create a user class for the login manager
+class User(UserMixin):
+    def __init__(self, id):
+        self.id = id
+
+    def get_id(self):
+        return self.id
+
+
+# create a todo class
+class Todo:
+    def __init__(self, title, description, created_at):
+        self.user = current_user.id
+        self.title = title
+        self.description = description
+        self.created_at = created_at
+
+
+# set up a user loader function for the login manager
+@login_manager.user_loader
+def load_user(user_id):
+    return User(user_id)
+
+
+# set up the login route
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        username = request.form["fusername"]
+        password = request.form["fpassword"]
+
+        # check if the user exists in the database
+        user = db.users.find_one({"username": username, "password": password})
+        if user is not None:
+            user_obj = User(user["_id"].__str__())
+            login_user(user_obj)
+            session["username"] = username
+            return redirect(url_for("home"))
+        else:
+            return show_info("Login failed!")
+    return render_template("login.html")
+
+
+# set up the logout route
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    session.pop("username", None)
+    return show_info("You are now logged out!")
+
+
+def show_info(message):
+    return render_template("info.html", message=message)
+
+
+# set up the register route
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    if request.method == "POST":
+        username = request.form["fusername"]
+        password = request.form["fpassword"]
+        confirm = request.form["fpassword2"]
+
+
+        # Check for empty fields
+        if username == "" or password == "":
+            return show_info("Please fill out all fields!")
+        
+        # Check if the username already exists
+        existing_user = db.users.find_one({"username": username})
+        if existing_user is not None:
+            return show_info("Username already exists!")
+
+        # Check if the passwords match
+        if password != confirm:
+            return show_info("Passwords do not match!")
+        
+        # insert the new user into the database
+        db.users.insert_one({"username": username, "password": password})
+        return redirect(url_for("login"))
+
+    return render_template("register.html")
+
+
 # set up the routes
 
 
@@ -73,42 +181,48 @@ def home():
     return render_template("index.html")
 
 
-@app.route("/read")
-def read():
+@app.route("/account")
+@login_required
+def account():
     """
-    Route for GET requests to the read page.
+    Route for the account page.
+    Simply returns to the browser the content of the account.html file located in the templates folder.
+    """
+    return render_template("account.html")
+
+
+@app.route("/todos")
+@login_required
+def todos():
+    """
+    Route for GET requests to the todos page.
     Displays some information for the user with links to other pages.
     """
-    docs = db.exampleapp.find({}).sort(
-        "created_at", -1
-    )  # sort in descending order of created_at timestamp
-    return render_template("read.html", docs=docs)  # render the read template
+    # docs = db.exampleapp.find({}).sort(
+    #     "created_at", -1
+    # )  # sort in descending order of created_at timestamp
+    todos = db.todos.find({"user": current_user.id})
+    return render_template("todos.html", todos=todos)
 
 
-@app.route("/create")
-def create():
+@app.route("/add_todo", methods=["POST"])
+def add_todo():
     """
-    Route for GET requests to the create page.
-    Displays a form users can fill out to create a new document.
-    """
-    return render_template("create.html")  # render the create template
-
-
-@app.route("/create", methods=["POST"])
-def create_post():
-    """
-    Route for POST requests to the create page.
+    Route for POST requests to the add_todo page.
     Accepts the form submission data for a new document and saves the document to the database.
     """
-    name = request.form["fname"]
-    message = request.form["fmessage"]
+    title = request.form["title"]
+    description = request.form["description"]
 
     # create a new document with the data the user entered
-    doc = {"name": name, "message": message, "created_at": datetime.datetime.utcnow()}
-    db.exampleapp.insert_one(doc)  # insert a new document
-
+    todo = Todo(
+        title=title,
+        description=description,
+        created_at=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+    )
+    db.todos.insert_one(todo.__dict__)
     return redirect(
-        url_for("read")
+        url_for("todos")
     )  # tell the browser to make a request for the /read route
 
 
@@ -121,14 +235,14 @@ def edit(mongoid):
     Parameters:
     mongoid (str): The MongoDB ObjectId of the record to be edited.
     """
-    doc = db.exampleapp.find_one({"_id": ObjectId(mongoid)})
+    todo = db.todos.find_one({"_id": ObjectId(mongoid)})
     return render_template(
-        "edit.html", mongoid=mongoid, doc=doc
+        "edit.html", mongoid=mongoid, todo=todo
     )  # render the edit template
 
 
 @app.route("/edit/<mongoid>", methods=["POST"])
-def edit_post(mongoid):
+def edit_todo(mongoid):
     """
     Route for POST requests to the edit page.
     Accepts the form submission data for the specified document and updates the document in the database.
@@ -136,22 +250,19 @@ def edit_post(mongoid):
     Parameters:
     mongoid (str): The MongoDB ObjectId of the record to be edited.
     """
-    name = request.form["fname"]
-    message = request.form["fmessage"]
+    title = request.form["ftitle"]
+    description = request.form["fdesc"]
 
-    doc = {
-        # "_id": ObjectId(mongoid),
-        "name": name,
-        "message": message,
-        "created_at": datetime.datetime.utcnow(),
-    }
-
-    db.exampleapp.update_one(
-        {"_id": ObjectId(mongoid)}, {"$set": doc}  # match criteria
+    # create a new document with the data the user entered
+    todo = Todo(
+        title=title,
+        description=description,
+        created_at=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
     )
+    db.todos.update_one({"_id": ObjectId(mongoid)}, {"$set": todo.__dict__})
 
     return redirect(
-        url_for("read")
+        url_for("todos")
     )  # tell the browser to make a request for the /read route
 
 
@@ -164,9 +275,9 @@ def delete(mongoid):
     Parameters:
     mongoid (str): The MongoDB ObjectId of the record to be deleted.
     """
-    db.exampleapp.delete_one({"_id": ObjectId(mongoid)})
+    db.todos.delete_one({"_id": ObjectId(mongoid)})
     return redirect(
-        url_for("read")
+        url_for("todos")
     )  # tell the web browser to make a request for the /read route.
 
 

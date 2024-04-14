@@ -1,11 +1,22 @@
-{% extends 'base.html' %}
-
-{% block container %}
-<h2>Welcome!</h2>
-<p>Welcome to the Flask app. This is the home page. Here are a few links to example pages you might find interesting.
+{% extends 'base.html' %} {% block container %}
+<h2>Welcome to Your Todo List!</h2>
+<p>Here's your one-stop solution for managing tasks and staying organized. Get started by exploring some key features of our Todo List application.</p>
+<p>
+    {% if session['username'] %} 
+    Welcome, [{{ session['username'] }}] ! Here are some quick links to get you started:
     <ul>
-        <li><a href="{{ url_for('read')}}">a page that displays information pulled from a MongoDB database collection</a></li>
-        <li><a href="{{ url_for('create')}}">a page with a form you can submit to create a new record in a MongoDB collection</a></li>
+        <li><a href="{{ url_for('todos')}}">Work Space</a> - See your current tasks, mark them as done, or delete completed ones.</li>
+        <li><a href="{{ url_for('logout')}}">Logout</a> - End your session and keep your tasks secure.</li>
     </ul>
+    {% else %}
+    You are not logged in. Please log in or register to start managing your tasks.
+    <ul>
+        <li><a href="{{ url_for('login')}}">Login</a> - Save your tasks and access them from anywhere.</li>
+        <li><a href="{{ url_for('register')}}">Register</a> - Create an account to start managing your tasks.</li>
+    </ul>
+    {% endif %}
+</p>
+<p>
+    Whether you're managing personal errands, work projects, or just need to remember the milk – our Todo List app is here to help you stay on track.
 </p>
 {% endblock %}

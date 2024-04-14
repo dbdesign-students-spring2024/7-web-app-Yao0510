@@ -1,7 +1,6 @@
 {% extends 'base.html' %} {% block container %}
-<h2>Create</h2>
-<p>Create a new record in the MongoDB database collection.</p>
-<form method="POST" action="{{ url_for('create_post') }}">
+<h2>Add Todo</h2>
+<form method="POST" action="{{ url_for('add') }}">
   <p>Your name: <input type="text" id="fname" name="fname" /><br /></p>
   <p>
     Message:

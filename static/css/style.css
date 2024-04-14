@@ -1,25 +1,218 @@
-.container {
-  border: 2px solid;
-  width: 50%;
-  margin: 0 auto;
+body, h1, p, a {
+  margin: 0;
+  padding: 0;
+  font-family: 'Arial', sans-serif;
 }
 
-header,
-footer,
-main {
+body {
+  background-color: #f4f4f4;
+  color: #333;
+  line-height: 1.6;
   padding: 20px;
 }
 
-header,
-main {
-  border-bottom: 2px solid;
-  margin-bottom: 5px;
+.container {
+  width: 50%;
+  margin: 0 auto;
+  background: white;
+  padding: 20px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.25);
+  border-radius: 10px;
 }
 
-p.post {
-  font-size: 12px;
+header, footer {
+  text-align: center;
+  padding: 1em 0;
+}
+
+header h1 {
+  color: #333;
+}
+
+a {
+  color: #007BFF;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+header p a {
+  margin: 0 10px;
+  padding: 5px 10px;
+  background: #007BFF;
+  color: white;
+  border-radius: 5px;
+}
+
+header p a:hover {
+  background: #0056b3;
+}
+
+main {
+  min-height: 60vh;
+  padding: 20px;
+  background: #fff;
 }
 
 footer {
+  font-size: 0.8em;
+  color: #666;
+}
+
+footer a {
+  color: #666;
+}
+
+footer a:hover {
+  color: #333;
+}
+
+/* 其他辅助类 */
+.text-center {
+  text-align: center;
+}
+
+
+/* Login.html */
+
+/* Basic styling for the container and form */
+.login-form {
+  max-width: 360px;
+  margin: 20px auto;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
   margin-bottom: 5px;
+}
+
+.form-group input[type="text"],
+.form-group input[type="password"] {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box; /* Makes sure padding doesn't affect width */
+}
+
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.link, .button {
+  text-decoration: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 18px;
+  transition: background-color 0.3s ease;
+}
+
+.link {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.button {
+  background-color: #007BFF;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
+.button:hover {
+  background-color: #0056b3;
+  
+}
+
+.button:active {
+  transform: scale(0.90); /* Button press effect */
+}
+
+.link:hover {
+  text-decoration: none;
+  background-color: #e0e0e0;
+}
+
+/* Basic styles for todo list and forms */
+.todo-item {
+  display: flex;
+  align-items: center;  /* Vertical alignment */
+  justify-content: space-between;  /* Distributes space between items */
+  padding: 10px;
+  margin-bottom: 10px;  /* Adds space between todo items */
+  border-bottom: 1px solid #eee;  /* Visual separation of items */
+}
+
+.todo-item h3, .todo-item p {
+  margin: 0 10px 0 0;  /* Right margin for spacing */
+  flex: 1;  /* Each flex child fills equal space */
+  white-space: nowrap;  /* Prevents wrapping of text */
+  overflow: hidden;  /* Hides text that overflows */
+  text-overflow: ellipsis;  /* Adds ellipsis to overflowed text */
+}
+
+.form-actions {
+  flex-shrink: 0;  /* Prevents flex items from shrinking */
+}
+
+.button {
+  margin-left: 10px;  /* Space between buttons */
+}
+
+/* Todo */
+
+.add-group {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  /* font-size: 16px; */
+}
+
+.add-group input[type="text"] {
+  flex-grow: 1;  /* Allows the input fields to grow and fill the space */
+  margin-right: 10px; /* Adds some space between the text fields and the button */
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.add-group input[type="submit"] {
+  padding: 8px 16px;
+  background-color: #007BFF;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.add-group input[type="submit"]:hover {
+  background-color: #0056b3;
+}
+
+.add-group input[type="submit"]:active {
+  transform: scale(0.98); /* Button press effect */
+}
+
+
+
+.textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  min-height: 100px; /* Ensures a decent size for text area */
+  box-sizing: border-box; /* Makes sure padding doesn't affect width */
 }

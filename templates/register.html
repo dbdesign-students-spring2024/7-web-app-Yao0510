@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block container %}
+<h2>Register</h2>
+<p>Register for a new account.</p>
+<form method="POST" action="{{ url_for('register') }}" class="login-form">
+  <div class="form-group">
+    <label for="fusername">Username:</label>
+    <input type="text" id="fusername" name="fusername" />
+  </div>
+  <div class="form-group">
+    <label for="fpassword">Password:</label>
+    <input type="password" id="fpassword" name="fpassword" />
+  </div>
+  <div class="form-group">
+    <label for="fpassword2">Confirm Password:</label>
+    <input type="password" id="fpassword2" name="fpassword2" />
+  </div>
+  <div class="form-actions">
+    <a href="{{ url_for('login')}}" class="link">Login</a>
+    <input type="submit" name="register-btn" value="Register" class="button" />
+  </div>
+</form>
+{% endblock %}
